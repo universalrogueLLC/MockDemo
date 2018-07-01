@@ -9,6 +9,11 @@ namespace MD.StudentTests
     [TestClass]
     public class UnitTests
     {
+        private string _loggedOperation;
+        private double _loggedOperand1;
+        private double _loggedOperand2;
+        private double _loggedResult;
+
         [TestMethod]
         public void StudentsShouldAddCorrectly()
         {
@@ -28,6 +33,10 @@ namespace MD.StudentTests
 
             // verify that the result was logged correctly, exactly once
             resultServiceMock.Verify(x => x.LogResult(expectedOperation, operand1, operand2, expectedResult), Times.AtMostOnce);
+            Assert.AreEqual(expectedOperation, this._loggedOperation);
+            Assert.AreEqual(operand1, this._loggedOperand1);
+            Assert.AreEqual(operand2, this._loggedOperand2);
+            Assert.AreEqual(expectedResult, this._loggedResult);
 
             // verify that no exception was ever logged
             resultServiceMock.Verify(x => x.LogException(It.IsAny<string>()), Times.Never);
@@ -151,6 +160,15 @@ namespace MD.StudentTests
         private Mock<IResultService> BuildResultService()
         {
             var mock = new Mock<IResultService>();
+
+            mock.Setup(x => x.LogResult(It.IsAny<string>(), It.IsAny<double>(), It.IsAny<double>(), It.IsAny<double>()))
+                .Callback((string operation, double op1, double op2, double result) =>
+                {
+                    this._loggedOperation = operation;
+                    this._loggedOperand1 = op1;
+                    this._loggedOperand2 = op2;
+                    this._loggedResult = result;
+                });
 
             return mock;
         }
